@@ -2,8 +2,26 @@ import customtkinter as ctk
 import subprocess
 import os
 import sys
+import json
 import opcoes
 import math
+
+CONFIG_FILE = "config.json"
+
+BG = "#18181b"
+PANEL = "#212124"
+CARD_BORDER = "#2c2c30"
+TEXT = "#f4f4f5"
+TEXT_MUTED = "#9ca3af"
+TEXT_FAINT = "#6b7280"
+
+GREEN = "#10b981"
+GREEN_HOVER = "#064e3b"
+BLUE = "#60a5fa"
+BLUE_HOVER = "#1e3a8a"
+RED = "#f87171"
+RED_HOVER = "#7f1d1d"
+
 
 def abrir_wake_up():
 
@@ -16,6 +34,7 @@ def abrir_wake_up():
     except Exception as e:
         print(f"Erro ao abrir o sistema: {e}")
 
+
 def abrir_opcoes():
 
     try:
@@ -24,102 +43,129 @@ def abrir_opcoes():
     except Exception as e:
         print(f"Erro ao abrir opções: {e}")
 
+
+def video_atual():
+
+    try:
+        if os.path.exists(CONFIG_FILE):
+            with open(CONFIG_FILE, "r", encoding="utf-8") as f:
+                config = json.load(f)
+                caminho = config.get("video", "")
+                if caminho:
+                    return os.path.splitext(os.path.basename(caminho))[0]
+    except Exception:
+        pass
+
+    return None
+
+
 def mostrar_menu():
 
     for widget in main_view.winfo_children():
         widget.destroy()
 
-    # CONTAINER CENTRAL
-    center = ctk.CTkFrame(main_view, fg_color="transparent")
-    center.place(relx=0.5, rely=0.5, anchor="center")
+    # PAINEL CENTRAL (card com leve profundidade)
+    card = ctk.CTkFrame(
+        main_view,
+        fg_color=PANEL,
+        corner_radius=24,
+        border_width=1,
+        border_color=CARD_BORDER,
+    )
+    card.place(relx=0.5, rely=0.5, anchor="center")
+
+    center = ctk.CTkFrame(card, fg_color="transparent")
+    center.pack(padx=70, pady=50)
+
+    # SELO
+    selo = ctk.CTkLabel(
+        center,
+        text="👁  ANTI-PROCRASTINAÇÃO",
+        font=("Segoe UI", 12, "bold"),
+        text_color=GREEN,
+    )
+    selo.pack(pady=(0, 12))
 
     # TITULO
     label = ctk.CTkLabel(
         center,
         text="WAKE UP",
-        font=("Inter", 42, "bold"),
-        text_color="#FFFFFF"
+        font=("Segoe UI", 46, "bold"),
+        text_color=TEXT,
     )
-
-    label.pack(pady=(0,10))
+    label.pack()
 
     # SUBTITULO
     sub = ctk.CTkLabel(
         center,
-        text="Controle sua produtividade",
-        font=("Inter", 16),
-        text_color="#9ca3af"
+        text="Controle sua produtividade — olhar para o lado não é uma opção",
+        font=("Segoe UI", 14),
+        text_color=TEXT_MUTED,
     )
+    sub.pack(pady=(6, 0))
 
-    sub.pack(pady=(0,40))
+    # BADGE COM O VIDEO CONFIGURADO
+    nome_video = video_atual()
 
-    # BOTÃO INICIAR
-    btn_ligar = ctk.CTkButton(
+    badge = ctk.CTkFrame(
         center,
-        text="INICIAR",
-        command=abrir_wake_up,
-        fg_color="transparent",
-        hover_color="#064e3b",
-        border_width=3,
-        border_color="#10b981",
-        corner_radius=12,
-        text_color="#10b981",
-        height=50,
-        width=280,
-        font=("Segoe UI", 16, "bold")
+        fg_color="#1b1b1e",
+        corner_radius=999,
+        border_width=1,
+        border_color=CARD_BORDER,
     )
+    badge.pack(pady=(18, 34))
 
-    btn_ligar.pack(pady=8)
+    ctk.CTkLabel(
+        badge,
+        text=(f"🎬  {nome_video}" if nome_video else "⚠  Nenhum vídeo configurado"),
+        font=("Segoe UI", 12),
+        text_color=TEXT_MUTED if nome_video else "#fbbf24",
+    ).pack(padx=18, pady=8)
 
-    # BOTÃO OPÇÕES
-    btn_opcoes = ctk.CTkButton(
+    def botao(texto, comando, cor, cor_hover):
+        return ctk.CTkButton(
+            center,
+            text=texto,
+            command=comando,
+            fg_color="transparent",
+            hover_color=cor_hover,
+            border_width=2,
+            border_color=cor,
+            corner_radius=12,
+            text_color=cor,
+            height=52,
+            width=300,
+            font=("Segoe UI", 15, "bold"),
+        )
+
+    botao("▶   INICIAR", abrir_wake_up, GREEN, GREEN_HOVER).pack(pady=6)
+    botao("⚙   OPÇÕES", abrir_opcoes, BLUE, BLUE_HOVER).pack(pady=6)
+    botao("✕   SAIR", app.quit, RED, RED_HOVER).pack(pady=6)
+
+    ctk.CTkLabel(
         center,
-        text="OPÇÕES",
-        command=abrir_opcoes,
-        fg_color="transparent",
-        hover_color="#1e3a8a",
-        border_width=3,
-        border_color="#60a5fa",
-        corner_radius=12,
-        text_color="#60a5fa",
-        height=50,
-        width=280,
-        font=("Segoe UI", 16, "bold")
-    )
+        text="Enter para iniciar  •  Esc para sair",
+        font=("Segoe UI", 11),
+        text_color=TEXT_FAINT,
+    ).pack(pady=(26, 0))
 
-    btn_opcoes.pack(pady=8)
-
-    # BOTÃO SAIR
-    btn_sair = ctk.CTkButton(
-        center,
-        text="SAIR",
-        command=app.quit,
-        fg_color="transparent",
-        hover_color="#7f1d1d",
-        border_width=3,
-        border_color="#f87171",
-        corner_radius=12,
-        text_color="#f87171",
-        height=50,
-        width=280,
-        font=("Segoe UI", 16, "bold")
-    )
-
-    btn_sair.pack(pady=8)
 
 ctk.set_appearance_mode("dark")
 
 app = ctk.CTk()
-app.title("Controle WAKE UP")
+app.title("WAKE UP — Controle de Produtividade")
 
 # FADE
 app.attributes("-alpha", 0)
+
 
 def fade_in():
     alpha = app.attributes("-alpha")
     if alpha < 1:
         app.attributes("-alpha", alpha + 0.04)
         app.after(15, fade_in)
+
 
 fade_in()
 
@@ -128,7 +174,7 @@ app.update_idletasks()
 app.after(50, lambda: app.state("zoomed"))
 
 # FUNDO
-bg_view = ctk.CTkFrame(app, fg_color="#2b2b2b")
+bg_view = ctk.CTkFrame(app, fg_color=BG)
 bg_view.place(x=0, y=0, relwidth=1, relheight=1)
 
 main_view = ctk.CTkFrame(app, fg_color="transparent")
@@ -136,13 +182,16 @@ main_view.place(x=0, y=0, relwidth=1, relheight=1)
 
 t = 0
 
+
 def animar_fundo():
     global t
-    intensidade = int(40 + 10 * math.sin(t))
-    cor = f"#{intensidade:02x}{intensidade:02x}{intensidade:02x}"
+    intensidade = int(24 + 6 * math.sin(t))
+    cor = f"#{intensidade:02x}{intensidade:02x}{intensidade + 2:02x}"
     bg_view.configure(fg_color=cor)
     t += 0.05
     app.after(30, animar_fundo)
+
+
 animar_fundo()
 
 app.bind("<Return>", lambda e: abrir_wake_up())

@@ -1,0 +1,11 @@
+__pycache__/
+*.pyc
+
+# ambientes virtuais
+venv/
+.venv/
+env/
+
+# artefatos de SO
+.DS_Store
+Thumbs.db

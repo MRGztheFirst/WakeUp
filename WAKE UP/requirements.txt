@@ -1,0 +1,7 @@
+customtkinter
+opencv-python
+mediapipe
+pygame
+requests
+flask
+yt-dlp
